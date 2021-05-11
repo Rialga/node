@@ -1,3 +1,5 @@
+/* eslint-disable prefer-const */
+/* eslint-disable eqeqeq */
 const uniqid = require('uniqid');
 const books = require('./books');
 
@@ -67,9 +69,60 @@ const creatBookHandler = (request, h) => {
   return response;
 };
 
-const showBookHandler = (reqeust, h) => {
-  const data = books.map((item) => ({ id: item.id, name: item.name, publisher: item.publisher }));
+const showBookHandler = (request, h) => {
+  const { query } = request;
+  const val = Object.values(query);
 
+  const isTrue = val.length > 0;
+
+  if (isTrue) {
+    const searchName = val[0];
+    const bool = searchName == 1;
+
+    if (Object.keys(query)[0] == 'finished') {
+      const data = books.filter((it) => new RegExp(bool, 'i').test(it.finished))
+        .map((item) => ({ id: item.id, name: item.name, publisher: item.publisher }));
+
+      const response = h.response({
+        status: 'success',
+        data: {
+          books: data,
+        },
+      });
+      response.code(200);
+      return response;
+    }
+
+    if (Object.keys(query)[0] == 'reading') {
+      const data = books.filter((it) => new RegExp(bool, 'i').test(it.reading))
+        .map((item) => ({ id: item.id, name: item.name, publisher: item.publisher }));
+
+      const response = h.response({
+        status: 'success',
+        data: {
+          books: data,
+        },
+      });
+      response.code(200);
+      return response;
+    }
+
+    if (Object.keys(query)[0] == 'name') {
+      const data = books.filter((it) => new RegExp(searchName, 'i').test(it.name))
+        .map((item) => ({ id: item.id, name: item.name, publisher: item.publisher }));
+
+      const response = h.response({
+        status: 'success',
+        data: {
+          books: data,
+        },
+      });
+      response.code(200);
+      return response;
+    }
+  }
+
+  const data = books.map((item) => ({ id: item.id, name: item.name, publisher: item.publisher }));
   const response = h.response({
     status: 'success',
     data: {
@@ -159,7 +212,6 @@ const deleteBookHandler = (request, h) => {
 
   const index = books.findIndex((item) => item.id === bookId);
 
-  
   if (index > -1) {
     books.splice(index, 1);
     const response = h.response({
